@@ -18,6 +18,7 @@ from google.protobuf import timestamp_pb2
 PROJECT_ID = "thromer-example-001"
 LOCATION = "us-west1"
 QUEUE_NAME = "batch-processing"
+SERVICE_ACCOUNT = "cloud-tasks-invoker"
 PROCESSING_FUNCTION_URL = f"https://{LOCATION}-{PROJECT_ID}.cloudfunctions.net/process_batch"
 BATCH_CONTROL_DOC_PATH = "system/batch_control"
 DELAY=timedelta(seconds=60)  # TODO 90 would be prudent
@@ -86,6 +87,10 @@ class DocHandler:
             http_request=tasks.HttpRequest(
                 http_method=tasks.HttpMethod.POST,
                 url=PROCESSING_FUNCTION_URL,
+                oidc_token=tasks.OidcToken(
+                    service_account_email=f"{SERVICE_ACCOUNT}@{PROJECT_ID}.iam.gserviceaccount.com",
+                    audience=PROCESSING_FUNCTION_URL  # TODO redundant?
+                ),
                 headers={"Content-Type": "application/json"}
             ),
             schedule_time=timestamp,
